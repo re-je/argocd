@@ -1,0 +1,29 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  name: argocd
+spec:
+  server:
+    grpc:
+      host: argocd-grpc.example.com
+      ingress:
+        enabled: true
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt
+          ingress.kubernetes.io/ssl-redirect: "true"
+        tls:
+          - hosts:
+            - argocd-grpc.example.com
+            secretName: argocd-grpc-tls-secret
+    host: argocd.example.com
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt
+        ingress.kubernetes.io/ssl-redirect: "true"
+      tls:
+        - hosts:
+          - argocd.example.com
+          secretName: argocd-tls-secret
+    insecure: true

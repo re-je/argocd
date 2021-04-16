@@ -1,0 +1,10 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  name: argocd
+spec:
+  oidcConfig: |
+    name: Keycloak
+    issuer: https://sso.example.com/auth/realms/cluster
+    clientID: argocd
+    clientSecret: 3e3f5e4b-6ec3-47e4-9963-9364f2a1b3cc

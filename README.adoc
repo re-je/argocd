@@ -1,0 +1,40 @@
+= OLM and Argo CD Setup
+
+This is based on Red Hat Canada's link:https://github.com/redhat-canada-gitops/argocd[Argo CD Setup] but also includes `cert-manager` and `OLM` and has been tweaked to work on generic k8s clusters specifically k3s.
+
+== Notes
+
+=== ArgoCD admin password
+
+Get ArgoCD `admin` password:
+
+----
+$ kubectl get -n argocd secrets argocd-cluster -o jsonpath='{.data.admin\.password}' | base64 -d
+----
+
+=== Updating OLM catalog
+
+To update the catalog run the following to first pull the latest image operators image:
+
+----
+$ kubectl run catalog-update-custom --image quay.io/operator-framework/upstream-community-operators:latest --image-pull-policy Always
+$ kubectl delete pod catalog-update-custom
+----
+
+Then link:https://operator-framework.github.io/olm-book/docs/when-to-update-my-operator.html[refresh the Catalogsource]:
+
+----
+$ kubectl delete pods -n olm -l olm.catalogSource=operatorhubio-catalog
+----
+
+=== Manually approving install plans
+
+In OLM when you set an operator for manual upgrades you need to manually approve the initial deployment which is challenging in a gitops world.
+This can be link:https://github.com/redhat-canada-gitops/catalog/tree/master/installplan-approver[automated].
+
+For a manual example to approve the operator `enmasse-operator` in the `enmasse` namespace run:
+
+----
+$ kubectl patch installplan $(kubectl get subscriptions.operators.coreos.com -A --field-selector metadata.name=enmasse-operator -o jsonpath='{.items[0].status.installPlanRef.name}') -n enmasse --type=json -p='[{"op":"replace","path": "/spec/approved", "value": true}]'
+----
+
